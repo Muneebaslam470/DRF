@@ -9,6 +9,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 # Create your views here.
 
@@ -37,15 +38,50 @@ def singleobj(request,id):
 @api_view(['GET','POST'])
 def multipleobj(request):
     if request.method == "POST":
-        parse_data = request.data
-        serializer = PersonModelSerializer(data=parse_data)
+        parsed_data = request.data
+        serializer = PersonModelSerializer(data=parsed_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"created":"successfull"},status=status.HTTP_201_CREATED)
        
-    if request.method == "GET": 
-        print(request.accepted_renderer)    
+    if request.method == "GET":    
         data = Person.objects.all()
         serializer = PersonModelSerializer(data,many=True)
         return Response(serializer.data)
 
+class MultipleObjAPIView(APIView):
+
+    def get(self,request):
+        data = Person.objects.all()
+        serializer = PersonModelSerializer(data,many=True)
+        return Response(serializer.data)
+
+    def post(self,request):
+        parsed_data = request.data
+        serializer = PersonModelSerializer(data=parsed_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"created":"successfull"},status=status.HTTP_201_CREATED)
+       
+class SingleObjAPIView(APIView):
+
+    def get(self,request,id):
+        data = get_object_or_404(Person,id=id) 
+        serializer = PersonModelSerializer(data)
+        return Response(serializer.data) 
+    
+    def put(self,request,id):
+        data = get_object_or_404(Person,id=id) 
+        parsed_data = request.data
+        serializer = PersonModelSerializer(data,data=parsed_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"update":"success"})
+
+    def patch(self,request,id):
+        data = get_object_or_404(Person,id=id) 
+        parsed_data = request.data
+        serializer = PersonModelSerializer(data,data=parsed_data,partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"update":"success"})   
