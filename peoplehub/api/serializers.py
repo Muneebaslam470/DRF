@@ -16,5 +16,9 @@ class PersonSerializer(serializers.Serializer):
         instance.save()
         return instance
     
-
+class PersonModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        fields = ['name','age','city']
+        
 
