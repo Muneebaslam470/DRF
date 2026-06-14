@@ -51,6 +51,11 @@ class MultipleObjAPIView(ListCreateAPIView):
     queryset = Person.objects.all()
     serializer_class = PersonModelSerializer
 
+    def get(self,request,*args,**kwargs):
+        print(request.user)
+        response = super().get(request,*args,**kwargs)
+        return response    
+
     
 class SingleObjAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Person.objects.all()
