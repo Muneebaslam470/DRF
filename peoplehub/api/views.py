@@ -1,15 +1,14 @@
 from django.shortcuts import render
 from .models import Person
 from .serializers import PersonSerializer,PersonModelSerializer
-from rest_framework.renderers import JSONRenderer
-import io
-from rest_framework.parsers import JSONParser
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import CreateModelMixin,ListModelMixin,UpdateModelMixin,DestroyModelMixin,RetrieveModelMixin
+
 
 # Create your views here.
 
@@ -49,39 +48,28 @@ def multipleobj(request):
         serializer = PersonModelSerializer(data,many=True)
         return Response(serializer.data)
 
-class MultipleObjAPIView(APIView):
+class MultipleObjAPIView(ListModelMixin,CreateModelMixin,GenericAPIView): 
+    queryset = Person.objects.all()
+    serializer_class = PersonModelSerializer
 
-    def get(self,request):
-        data = Person.objects.all()
-        serializer = PersonModelSerializer(data,many=True)
-        return Response(serializer.data)
+    def get(self,request,*args,**kwargs):
+       return self.list(request,*args,**kwargs)
 
     def post(self,request):
-        parsed_data = request.data
-        serializer = PersonModelSerializer(data=parsed_data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"created":"successfull"},status=status.HTTP_201_CREATED)
+       return self.create(request)
        
-class SingleObjAPIView(APIView):
+class SingleObjAPIView(GenericAPIView,RetrieveModelMixin,UpdateModelMixin,DestroyModelMixin):
+    queryset = Person.objects.all()
+    serializer_class = PersonModelSerializer
 
-    def get(self,request,id):
-        data = get_object_or_404(Person,id=id) 
-        serializer = PersonModelSerializer(data)
-        return Response(serializer.data) 
+    def get(self,request,*args,**kwargs):
+       return self.retrieve(request,*args,**kwargs)
     
-    def put(self,request,id):
-        data = get_object_or_404(Person,id=id) 
-        parsed_data = request.data
-        serializer = PersonModelSerializer(data,data=parsed_data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"update":"success"})
+    def put(self,request,*args,**kwargs):
+       return self.update(request,*args,**kwargs)
 
-    def patch(self,request,id):
-        data = get_object_or_404(Person,id=id) 
-        parsed_data = request.data
-        serializer = PersonModelSerializer(data,data=parsed_data,partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"update":"success"})   
+    def patch(self,request,*args,**kwargs):
+        return self.partial_update(request,*args,**kwargs)
+    
+    def delete(self,request,*args,**kwargs):
+        return self.destroy(request,*args,**kwargs) 
