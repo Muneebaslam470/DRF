@@ -31,4 +31,9 @@ class UserRegistration(APIView):
         serializer.save()
         return Response({"messsage":"User created successfully"},status=status.HTTP_201_CREATED)
     
+class LogoutAPIView(APIView):
+
+    def post(self,request):
+        request.auth.delete()
+        return Response({"message":"logout Successfull"})
 
